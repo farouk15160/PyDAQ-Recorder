@@ -79,4 +79,3 @@ Graph does not appear:
    -> The script ignores channels with an average voltage < 0.2V to filter noise.
       Ensure your sensors are active.
 
-==============================================================================
