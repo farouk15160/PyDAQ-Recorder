@@ -1,81 +1,128 @@
-# DT-OPEN LAYERS PYTHON DATA LOGGER & PLOTTER
+# 📊 PyDAQ-Logger: Data Translation Interface
 
-DESCRIPTION
------------
-This Python application interfaces with Data Translation (DT) USB DAQ boards 
-(specifically targeted for DT9816) using the Open Layers API (oldaapi64.dll).
+A Python-based Data Acquisition & Logging tool for **Data Translation (MCC) Hardware**.
 
-It performs the following actions:
-1. Connects to the DAQ board via USB.
-2. Logs Analog Input data from specified channels to a CSV file.
-3. Handles real-time data conversion (Codes to Volts).
-4. Upon stopping (Ctrl+C), generates a Matplotlib graph of active channels.
-5. Allows the user to name channels dynamically before plotting.
+---
 
-PREREQUISITES
--------------
-1. Hardware:
-   - Data Translation USB DAQ Device (e.g., DT9816).
-   - Connected via USB.
+## 📖 Overview
 
-2. Drivers:
-   - You must install the "DT-Open Layers" Driver suite (OMNI CD).
-   - Download: https://digilent.com/reference/software/dt-open-layers/start
-   - Ensure 'oldaapi64.dll' is present in C:\Windows\System32\ after install.
+PyDAQ-Logger provides a robust Python interface for Data Translation USB DAQ boards (tested on DT9816) using the **DT-Open Layers driver (oldaapi64.dll)**.
 
-3. Python Environment:
-   - Python 3.8 or higher (64-bit version required to match oldaapi64.dll).
+It handles:
 
-INSTALLATION
-------------
-1. Install the required Python libraries:
-   
-   pip install pandas matplotlib
+* Hardware initialization
+* Real-time voltage logging to CSV
+* Automated post-acquisition visualization
 
-2. Verify the driver installation:
-   Ensure "oldaapi64.dll" exists in C:\Windows\System32.
+---
 
-CONFIGURATION
--------------
-Open the Python script and adjust the constants at the top if necessary:
+## ✨ Features
 
-- CHANNELS: List of channel indices to record (e.g., [0, 1, 2]).
-- FREQ_HZ:  Sampling frequency (samples per second).
-            * Note: To record 1 sample per minute, set FREQ_HZ = 1/60.
-- GAIN:     Input gain setting (Specific to your board's capability).
-- BOARD_NAME: Default is b"DT9816(00)". Change this if using a different model.
+* **Direct Driver Access:** Uses `ctypes` to wrap `oldaapi64.dll`, bypassing proprietary software.
+* **Real-Time Logging:** Logs 6 analog channels to timestamped CSV.
+* **Smart Visualization:** Detects active channels (Mean > 0.2V) and ignores floating pins.
+* **Interactive Naming:** Prompts user for active channel names.
+* **Robust Error Handling:** Gracefully releases hardware resources on Ctrl+C.
 
-USAGE
------
-1. Run the script via command line:
-   
-   python main.py
+---
 
-2. The script will print board specifications and begin logging.
-   The terminal will show: "Data: [Timestamp, Voltage, Voltage...]"
+## 🛠️ Prerequisites
 
-3. To STOP recording:
-   Press [Ctrl] + [C] on your keyboard.
+### Hardware
 
-4. Post-Processing:
-   - The script will detect channels with a mean voltage > 0.2V.
-   - It will ask you to name these channels in the Terminal.
-   - Example input: "Pressure_Sensor_1"
-   - After naming, the plot window will open.
-   - The data is saved to a file named "daq_log_YYYY-MM-DD_HH-MM-SS.csv".
+* Data Translation DAQ Board (DT9816)
+* DT-Open Layers driver installed
+* `oldaapi64.dll` in `C:\Windows\System32\` or script directory
 
-TROUBLESHOOTING
----------------
-Error: "Could not load 'oldaapi64.dll'"
-   -> The driver is not installed, or you are using 32-bit Python with 64-bit 
-      drivers (or vice versa). Ensure you are using 64-bit Python.
+### Software
 
-Error: "Driver Error..."
-   -> Ensure the USB board is plugged in.
-   -> Ensure the BOARD_NAME in the code matches your device name in the 
-      Open Layers Control Panel.
+* Python 3.8+
+* Libraries:
 
-Graph does not appear:
-   -> The script ignores channels with an average voltage < 0.2V to filter noise.
-      Ensure your sensors are active.
+```
+pip install pandas matplotlib
+```
 
+---
+
+## 🚀 Usage
+
+### Connect Hardware
+
+Plug in your USB DAQ board.
+
+### Run the Script
+
+```
+python main.py
+```
+
+### Recording
+
+* Initializes board and prints resolution & voltage range
+* Logs to CSV: `daq_log_YYYY-MM-DD_HH-MM-SS.csv`
+* Prints voltages to console
+
+### Stop & Plot
+
+* Press Ctrl+C
+* Name active channels (e.g., `Pressure Sensor`)
+* Stacked plot window appears
+
+---
+
+## ⚙️ Configuration
+
+Adjust sampling parameters at the top of the script:
+
+```python
+CHANNELS = [0, 1, 2, 3, 4, 5]  # Active pins
+GAIN = 0.1                     # Board-specific gain
+FREQ_HZ = 20                   # Samples per second
+```
+
+Change to 1 sample per minute:
+
+```python
+FREQ_HZ = 1/60  # 0.0166 Hz
+```
+
+---
+
+## 📊 Example Output
+
+### Console
+
+```
+--- Initializing DT9816(00) ---
+Specs: 16-bit, Range [-10.0V to 10.0V]
+Logging Channels [0,1,2,3,4,5] to daq_log_2023-10-25_14-30-00.csv
+Press Ctrl+C to STOP recording and VIEW PLOT.
+Data: [0.0012, 4.9821, 0.0001, ...]
+```
+
+### CSV Structure
+
+| Timestamp               | Ch0 (V) | Ch1 (V) | ... |
+| :---------------------- | :------ | :------ | :-- |
+| 2023-10-25T14:30:00.123 | 0.0012  | 4.9821  | ... |
+
+---
+
+## ⚠️ Troubleshooting
+
+* **CRITICAL ERROR: Could not load 'oldaapi64.dll'**
+
+  * Install manufacturer drivers
+  * Ensure DLL is in System32 or script folder
+
+* **Driver Error X in olDaInitialize**
+
+  * Check board connection
+  * Ensure no other program (QuickDAQ etc.) is using the board
+
+---
+
+## 📜 License
+
+Open Source. Modify freely for your DAQ hardware implementation.
